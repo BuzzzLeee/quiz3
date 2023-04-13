@@ -8,7 +8,10 @@ app.post('/login', (req, res) => {
     console.log(req.body)
 
     let result = login(req.body.username, req.body.password)
-    res.send(result)
+
+
+    let token = generateToken(result)
+    res.send(token)
   })
 
 
@@ -17,8 +20,8 @@ app.get('/', (req, res) => {
   res.send('Hello UTeM!')
 })
 
-app.get('/bye', (req, res) => {
-    res.send('Bye Bye UTeM !')
+app.get('/bye', verifyToken, (req, res) => {
+    res.send('Bye God Bless You !')
   })
 
 app.post('/register', (req, res) => {
@@ -26,7 +29,8 @@ app.post('/register', (req, res) => {
 
     let result = register(req.body.username, req.body.password,
        req.body.name, req.body.email)
-    res.send(result)
+       
+       res.send(result)
     //res.send('Account Create!')
   })  
 
@@ -93,3 +97,34 @@ function register(reqUsername, reqPassword, reqName, reqEmail)
 
 //register("BOSSKU", "bossku123", "Malu Apa Bossku", "bossku35@gmail.com")
 //console.log(login("BOSSKU", "bossku123"))
+
+const jwt = require('jsonwebtoken');
+function generateToken(userData)
+{
+    const token = jwt.sign
+    (
+        userData, 'inipassword',
+        { expiresIn: 60 }
+    );
+
+    return token
+}
+
+
+function verifyToken(req, res, next)
+{
+    let header = req.headers.authorization
+    console.log(header)
+
+    let token = header.split(' ')[1]
+
+    jwt.verify(token, 'inipassword', function(err, decoded)
+    {
+        if(err){
+            res.send("Invalid Token")
+        }
+        
+        req.user = decoded
+        next()
+    });
+}
